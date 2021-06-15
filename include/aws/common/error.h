@@ -42,7 +42,11 @@ struct aws_error_info_list {
         .formatted_name = LN ": " #C ", " ES,                                                                          \
     }
 
-typedef void(aws_error_handler_fn)(int err, void *ctx);
+#ifdef VERIFAST /*VF_refacotring: Function pointer syntax */
+	typedef void aws_error_handler_fn(int err, void *ctx);
+#else
+	typedef void(aws_error_handler_fn)(int err, void *ctx);
+#endif
 
 AWS_EXTERN_C_BEGIN
 
@@ -137,7 +141,9 @@ AWS_COMMON_API
 int aws_translate_and_raise_io_error(int error_no);
 
 #ifndef AWS_NO_STATIC_IMPL
-#    include <aws/common/error.inl>
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle .inl include */
+	#    include <aws/common/error.inl>
+#endif
 #endif /* AWS_NO_STATIC_IMPL */
 
 AWS_EXTERN_C_END
