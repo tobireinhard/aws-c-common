@@ -6,7 +6,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/common/assert.h>
+#ifndef VERIFAST /*VF_refacotring: Some macros cannot be parsed */
+	#include <aws/common/assert.h>
+#endif
 #include <aws/common/exports.h>
 #include <aws/common/macros.h>
 #include <aws/common/package.h>
