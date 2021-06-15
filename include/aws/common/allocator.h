@@ -50,10 +50,20 @@ AWS_EXTERN_C_BEGIN
 /**
  * Inexpensive (constant time) check of data-structure invariants.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 bool aws_allocator_is_valid(const struct aws_allocator *alloc);
 
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 struct aws_allocator *aws_default_allocator(void);
 
 #ifdef __MACH__
@@ -79,14 +89,24 @@ void aws_wrapped_cf_allocator_destroy(CFAllocatorRef allocator);
 /**
  * Returns at least `size` of memory ready for usage or returns NULL on failure.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 void *aws_mem_acquire(struct aws_allocator *allocator, size_t size);
 
 /**
  * Allocates a block of memory for an array of num elements, each of them size bytes long, and initializes all its bits
  * to zero. Returns null on failure.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 void *aws_mem_calloc(struct aws_allocator *allocator, size_t num, size_t size);
 
 /**
@@ -98,14 +118,24 @@ void *aws_mem_calloc(struct aws_allocator *allocator, size_t num, size_t size);
  *
  * Returns a pointer to the allocation.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 void *aws_mem_acquire_many(struct aws_allocator *allocator, size_t count, ...);
 
 /**
  * Releases ptr back to whatever allocated it.
  * Nothing happens if ptr is NULL.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 void aws_mem_release(struct aws_allocator *allocator, void *ptr);
 
 /*
@@ -116,7 +146,12 @@ void aws_mem_release(struct aws_allocator *allocator, void *ptr);
  * If reallocation fails, *ptr is unchanged, and this method raises an
  * AWS_ERROR_OOM error.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 int aws_mem_realloc(struct aws_allocator *allocator, void **ptr, size_t oldsize, size_t newsize);
 /*
  * Maintainer note: The above function doesn't return the pointer (as with
@@ -129,8 +164,14 @@ int aws_mem_realloc(struct aws_allocator *allocator, void **ptr, size_t oldsize,
 enum aws_mem_trace_level {
     AWS_MEMTRACE_NONE = 0,   /* no tracing */
     AWS_MEMTRACE_BYTES = 1,  /* just track allocation sizes and total allocated */
-    AWS_MEMTRACE_STACKS = 2, /* capture callstacks for each allocation */
+    
+    #ifdef VERIFAST /*VF_refacotring: Comma after last definition */
+	AWS_MEMTRACE_STACKS = 2 /* capture callstacks for each allocation */
+    #else
+    	AWS_MEMTRACE_STACKS = 2, /* capture callstacks for each allocation */
+    #endif
 };
+
 
 /*
  * Wraps an allocator and tracks all external allocations. If aws_mem_trace_dump() is called
@@ -142,7 +183,12 @@ enum aws_mem_trace_level {
  * otherwise it is ignored. 8 tends to be a pretty good number balancing storage space vs useful stacks.
  * Returns the tracer allocator, which should be used for all allocations that should be tracked.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 struct aws_allocator *aws_mem_tracer_new(
     struct aws_allocator *allocator,
     struct aws_allocator *deprecated,
@@ -153,7 +199,12 @@ struct aws_allocator *aws_mem_tracer_new(
  * Unwraps the traced allocator and cleans up the tracer.
  * Returns the original allocator
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 struct aws_allocator *aws_mem_tracer_destroy(struct aws_allocator *trace_allocator);
 
 /*
@@ -161,19 +212,34 @@ struct aws_allocator *aws_mem_tracer_destroy(struct aws_allocator *trace_allocat
  * based on the trace level set when aws_mem_trace() was called.
  * Should be passed the tracer allocator returned from aws_mem_trace().
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 void aws_mem_tracer_dump(struct aws_allocator *trace_allocator);
 
 /*
  * Returns the current number of bytes in outstanding allocations
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 size_t aws_mem_tracer_bytes(struct aws_allocator *trace_allocator);
 
 /*
  * Returns the current number of outstanding allocations
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 size_t aws_mem_tracer_count(struct aws_allocator *trace_allocator);
 
 /*
@@ -181,14 +247,24 @@ size_t aws_mem_tracer_count(struct aws_allocator *trace_allocator);
  * and handle small allocs, and will forward anything larger to the parent allocator.
  * If multi_threaded is true, the internal allocator will protect its internal data structures with a mutex
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 struct aws_allocator *aws_small_block_allocator_new(struct aws_allocator *allocator, bool multi_threaded);
 
 /*
  * Destroys a Small Block Allocator instance and frees its memory to the parent allocator. The parent
  * allocator will otherwise be unaffected.
  */
-AWS_COMMON_API
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle macro AWS_COMMON_API
+                                   * Where is this macro defined?
+                                   * error:  "Preprocessing error: Different amount of tokens were consumed by normal and context-free preprocessors"
+                                   */
+	AWS_COMMON_API
+#endif
 void aws_small_block_allocator_destroy(struct aws_allocator *sba_allocator);
 
 AWS_EXTERN_C_END

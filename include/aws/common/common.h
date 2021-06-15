@@ -12,8 +12,6 @@
 #include <aws/common/allocator.h>
 #ifndef VERIFAST /*VF_refacotring: Some macros cannot be parsed */
 	#include <aws/common/assert.h>
-#else
-	#error
 #endif
 #include <aws/common/error.h>
 #include <aws/common/macros.h>
