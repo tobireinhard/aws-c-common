@@ -7,7 +7,7 @@
 
 #ifndef VERIFAST /*VF_refacotring: Cannot parse some macros */
 	#include <aws/common/assert.h>
-#ifndef VERIFAST /*VF_refacotring: Cannot parse "..." */
+#endif
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,5 +91,4 @@ AWS_STATIC_ASSERT(sizeof(char) == 1);
  * @deprecated Use int64_t instead for offsets in public APIs.
  */
 typedef int64_t aws_off_t;
-
 #endif /* AWS_COMMON_STDINT_H */
