@@ -21,23 +21,31 @@
 /* https://stackoverflow.com/questions/9183993/msvc-variadic-macro-expansion */
 #define GLUE(x, y) x y
 
-#define RETURN_ARG_COUNT(_1_, _2_, _3_, _4_, _5_, count, ...) count
+#ifndef VERIFAST /*VF_refacotring: Cannot parse "..." */
+	#define RETURN_ARG_COUNT(_1_, _2_, _3_, _4_, _5_, count, ...) count
+#endif
 #define EXPAND_ARGS(args) RETURN_ARG_COUNT args
-#define COUNT_ARGS_MAX5(...) EXPAND_ARGS((__VA_ARGS__, 5, 4, 3, 2, 1, 0))
+#ifndef VERIFAST /*VF_refacotring: Cannot parse "..." */
+	#define COUNT_ARGS_MAX5(...) EXPAND_ARGS((__VA_ARGS__, 5, 4, 3, 2, 1, 0))
+#endif
 
 #define OVERLOAD_MACRO2(name, count) name##count
 #define OVERLOAD_MACRO1(name, count) OVERLOAD_MACRO2(name, count)
 #define OVERLOAD_MACRO(name, count) OVERLOAD_MACRO1(name, count)
 
-#define CALL_OVERLOAD(name, ...) GLUE(OVERLOAD_MACRO(name, COUNT_ARGS_MAX5(__VA_ARGS__)), (__VA_ARGS__))
+#ifndef VERIFAST /*VF_refacotring: Cannot parse "..." */
+	#define CALL_OVERLOAD(name, ...) GLUE(OVERLOAD_MACRO(name, COUNT_ARGS_MAX5(__VA_ARGS__)), (__VA_ARGS__))
+#endif
 
 #define CALL_OVERLOAD_TEST1(x) x
 #define CALL_OVERLOAD_TEST2(x, y) y
 #define CALL_OVERLOAD_TEST3(x, y, z) z
-#define CALL_OVERLOAD_TEST(...) CALL_OVERLOAD(CALL_OVERLOAD_TEST, __VA_ARGS__)
-AWS_STATIC_ASSERT(CALL_OVERLOAD_TEST(1) == 1);
-AWS_STATIC_ASSERT(CALL_OVERLOAD_TEST(1, 2) == 2);
-AWS_STATIC_ASSERT(CALL_OVERLOAD_TEST(1, 2, 3) == 3);
+#ifndef VERIFAST /*VF_refacotring: Cannot parse "..." */
+	#define CALL_OVERLOAD_TEST(...) CALL_OVERLOAD(CALL_OVERLOAD_TEST, __VA_ARGS__)
+	AWS_STATIC_ASSERT(CALL_OVERLOAD_TEST(1) == 1);
+	AWS_STATIC_ASSERT(CALL_OVERLOAD_TEST(1, 2) == 2);
+	AWS_STATIC_ASSERT(CALL_OVERLOAD_TEST(1, 2, 3) == 3);
+#endif
 
 #define AWS_CACHE_LINE 64
 /**

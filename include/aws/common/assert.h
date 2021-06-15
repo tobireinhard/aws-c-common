@@ -14,6 +14,7 @@ AWS_EXTERN_C_BEGIN
 
 AWS_COMMON_API
 AWS_DECLSPEC_NORETURN
+
 void aws_fatal_assert(const char *cond_str, const char *file, int line) AWS_ATTRIBUTE_NORETURN;
 
 AWS_EXTERN_C_END

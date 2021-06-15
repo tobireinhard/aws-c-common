@@ -12,15 +12,40 @@
 AWS_EXTERN_C_BEGIN
 
 /* Allocator structure. An instance of this will be passed around for anything needing memory allocation */
-struct aws_allocator {
-    void *(*mem_acquire)(struct aws_allocator *allocator, size_t size);
-    void (*mem_release)(struct aws_allocator *allocator, void *ptr);
-    /* Optional method; if not supported, this pointer must be NULL */
-    void *(*mem_realloc)(struct aws_allocator *allocator, void *oldptr, size_t oldsize, size_t newsize);
-    /* Optional method; if not supported, this pointer must be NULL */
-    void *(*mem_calloc)(struct aws_allocator *allocator, size_t num, size_t size);
-    void *impl;
-};
+#ifdef VERIFAST /*VF_refacotring: Function pointer */
+	typedef void* mem_acquire_t(struct aws_allocator *allocator, size_t size);
+	typedef void mem_release_t(struct aws_allocator *allocator, void *ptr);
+	typedef void* mem_realloc_t(struct aws_allocator *allocator, void *oldptr, size_t oldsize, size_t newsize);
+	typedef void* mem_calloc_t(struct aws_allocator *allocator, size_t num, size_t size);
+
+	struct aws_allocator {
+	    mem_acquire_t mem_acquire;
+//	    void *(*mem_acquire)(struct aws_allocator *allocator, size_t size);
+
+            mem_release_t mem_release;
+//	    void (*mem_release)(struct aws_allocator *allocator, void *ptr);
+
+	    /* Optional method; if not supported, this pointer must be NULL */
+	    mem_realloc_t mem_realloc;
+//	    void *(*mem_realloc)(struct aws_allocator *allocator, void *oldptr, size_t oldsize, size_t newsize);
+	    
+	    /* Optional method; if not supported, this pointer must be NULL */
+	    mem_calloc_t mem_calloc;
+//	    void *(*mem_calloc)(struct aws_allocator *allocator, size_t num, size_t size);
+	    
+	    void *impl;
+	};
+#else
+	struct aws_allocator {
+	    void *(*mem_acquire)(struct aws_allocator *allocator, size_t size);
+	    void (*mem_release)(struct aws_allocator *allocator, void *ptr);
+	    /* Optional method; if not supported, this pointer must be NULL */
+	    void *(*mem_realloc)(struct aws_allocator *allocator, void *oldptr, size_t oldsize, size_t newsize);
+	    /* Optional method; if not supported, this pointer must be NULL */
+	    void *(*mem_calloc)(struct aws_allocator *allocator, size_t num, size_t size);
+	    void *impl;
+	};
+#endif
 
 /**
  * Inexpensive (constant time) check of data-structure invariants.
