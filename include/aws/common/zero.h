@@ -11,6 +11,13 @@
 
 #include <string.h>
 
+
+#ifdef VERIFAST /*VF_refacotring: Resolves parse below */
+	# define AWS_EXTERN_C_BEGIN
+	# define AWS_COMMON_API
+	# define AWS_EXTERN_C_END
+#endif
+
 AWS_EXTERN_C_BEGIN
 
 /**
@@ -20,6 +27,9 @@ AWS_EXTERN_C_BEGIN
     do {                                                                                                               \
         memset(&(object), 0, sizeof(object));                                                                          \
     } while (0)
+
+;
+
 
 /**
  * Set each byte in the array to zero.
@@ -45,8 +55,7 @@ AWS_EXTERN_C_BEGIN
 /**
  * Returns whether each byte is zero.
  */
-AWS_STATIC_IMPL
-bool aws_is_mem_zeroed(const void *buf, size_t bufsize);
+AWS_STATIC_IMPLbool aws_is_mem_zeroed(const void *buf, size_t bufsize);
 
 /**
  * Securely zeroes a memory buffer. This function will attempt to ensure that
@@ -55,9 +64,11 @@ bool aws_is_mem_zeroed(const void *buf, size_t bufsize);
 AWS_COMMON_API
 void aws_secure_zero(void *pBuf, size_t bufsize);
 
-#ifndef AWS_NO_STATIC_IMPL
-#    include <aws/common/zero.inl>
-#endif /* AWS_NO_STATIC_IMPL */
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle inclusion of .inl files */
+	#ifndef AWS_NO_STATIC_IMPL
+	#    include <aws/common/zero.inl>
+	#endif /* AWS_NO_STATIC_IMPL */
+#endif
 
 AWS_EXTERN_C_END
 
