@@ -166,15 +166,30 @@ int aws_array_list_ensure_capacity(struct aws_array_list *AWS_RESTRICT list, siz
     return AWS_OP_SUCCESS;
 }
 
+
+// ===============
+//test
+#ifndef VERIFAST /*VF_refacotring: Enums cannot be nested and must be named. */
+    enum slice_enum { SLICE = 128 };
+#endif
+
 static void aws_array_list_mem_swap(void *AWS_RESTRICT item1, void *AWS_RESTRICT item2, size_t item_size) {
+#ifndef VERIFAST /*VF_refacotring: Enums cannot be nested and must be named. */
     enum { SLICE = 128 };
+#endif
+    
 
     AWS_FATAL_PRECONDITION(item1);
     AWS_FATAL_PRECONDITION(item2);
 
     /* copy SLICE sized bytes at a time */
     size_t slice_count = item_size / SLICE;
-    uint8_t temp[SLICE];
+    uint8_t temp[9];
+    #ifdef VERIFAST /*VF_refacotring: VeriFast does not support the use of enums as array length */
+	    uint8_t temp[128];
+    #else
+	    uint8t temp[SLICE];
+    #endif
     for (size_t i = 0; i < slice_count; i++) {
         memcpy((void *)temp, (void *)item1, SLICE);
         memcpy((void *)item1, (void *)item2, SLICE);
@@ -189,6 +204,7 @@ static void aws_array_list_mem_swap(void *AWS_RESTRICT item1, void *AWS_RESTRICT
     memcpy((void *)item2, (void *)temp, remainder);
 }
 
+
 void aws_array_list_swap(struct aws_array_list *AWS_RESTRICT list, size_t a, size_t b) {
     AWS_FATAL_PRECONDITION(a < list->length);
     AWS_FATAL_PRECONDITION(b < list->length);
@@ -199,7 +215,12 @@ void aws_array_list_swap(struct aws_array_list *AWS_RESTRICT list, size_t a, siz
         return;
     }
 
-    void *item1 = NULL, *item2 = NULL;
+    #ifdef VERIFAST /*VF_refacotring: multiple pointer declarations & definitions in one statement */
+	void *item1 = NULL;
+	void *item2 = NULL;
+    #else
+	void *item1 = NULL, *item2 = NULL;
+    #endif
     aws_array_list_get_at_ptr(list, &item1, a);
     aws_array_list_get_at_ptr(list, &item2, b);
     aws_array_list_mem_swap(item1, item2, list->item_size);
