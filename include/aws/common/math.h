@@ -12,13 +12,18 @@
 #include <limits.h>
 #include <stdlib.h>
 
+
 /* The number of bits in a size_t variable */
-#if SIZE_MAX == UINT32_MAX
-#    define SIZE_BITS 32
-#elif SIZE_MAX == UINT64_MAX
-#    define SIZE_BITS 64
+#ifdef VERIFAST /*VF_refacotring: Fixing maximal size */
+	#define SIZE_MAX UINT32_MAX
 #else
-#    error "Target not supported"
+	#if SIZE_MAX == UINT32_MAX
+	#    define SIZE_BITS 32
+	#elif SIZE_MAX == UINT64_MAX
+	#    define SIZE_BITS 64
+	#else
+	#    error "Target not supported"
+	#endif
 #endif
 
 /* The largest power of two that can be stored in a size_t */
@@ -198,9 +203,11 @@ AWS_STATIC_IMPL float aws_max_float(float a, float b);
 AWS_STATIC_IMPL double aws_min_double(double a, double b);
 AWS_STATIC_IMPL double aws_max_double(double a, double b);
 
-#ifndef AWS_NO_STATIC_IMPL
-#    include <aws/common/math.inl>
-#endif /* AWS_NO_STATIC_IMPL */
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle inclusion of .inl files */
+	#ifndef AWS_NO_STATIC_IMPL
+	#    include <aws/common/math.inl>
+	#endif /* AWS_NO_STATIC_IMPL */
+#endif
 
 AWS_EXTERN_C_END
 

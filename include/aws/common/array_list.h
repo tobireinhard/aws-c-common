@@ -28,7 +28,11 @@ struct aws_array_list {
  * return a positive number if a > b, zero if a = b, and a negative number
  * if a < b.
  */
-typedef int(aws_array_list_comparator_fn)(const void *a, const void *b);
+#ifdef VERIFAST /*VF_refacotring: Function signature syntax */
+	typedef int aws_array_list_comparator_fn (const void *a, const void *b);
+#else
+	typedef int(aws_array_list_comparator_fn)(const void *a, const void *b);
+#endif
 
 AWS_EXTERN_C_BEGIN
 
@@ -206,9 +210,12 @@ void aws_array_list_swap(struct aws_array_list *AWS_RESTRICT list, size_t a, siz
 AWS_STATIC_IMPL
 void aws_array_list_sort(struct aws_array_list *AWS_RESTRICT list, aws_array_list_comparator_fn *compare_fn);
 
-#ifndef AWS_NO_STATIC_IMPL
-#    include <aws/common/array_list.inl>
-#endif /* AWS_NO_STATIC_IMPL */
+
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot handle inclusion of .inl files */
+	#ifndef AWS_NO_STATIC_IMPL
+	#    include <aws/common/array_list.inl>
+	#endif /* AWS_NO_STATIC_IMPL */
+#endif
 
 AWS_EXTERN_C_END
 
