@@ -55,33 +55,37 @@
  */
 #define PRInSTR "%.*s"
 
-#if defined(_MSC_VER)
-#    include <malloc.h>
-#    define AWS_ALIGNED_TYPEDEF(from, to, alignment) typedef __declspec(align(alignment)) from to
-#    define AWS_LIKELY(x) x
-#    define AWS_UNLIKELY(x) x
-#    define AWS_FORCE_INLINE __forceinline
-#    define AWS_NO_INLINE __declspec(noinline)
-#    define AWS_VARIABLE_LENGTH_ARRAY(type, name, length) type *name = _alloca(sizeof(type) * (length))
-#    define AWS_DECLSPEC_NORETURN __declspec(noreturn)
-#    define AWS_ATTRIBUTE_NORETURN
+#ifdef VERIFAST /*VF_refacotring: Undefined macro leads to parse errors */
+	#define AWS_DECLSPEC_NORETURN
 #else
-#    if defined(__GNUC__) || defined(__clang__)
-#        define AWS_ALIGNED_TYPEDEF(from, to, alignment) typedef from to __attribute__((aligned(alignment)))
-#        define AWS_TYPE_OF(a) __typeof__(a)
-#        define AWS_LIKELY(x) __builtin_expect(!!(x), 1)
-#        define AWS_UNLIKELY(x) __builtin_expect(!!(x), 0)
-#        define AWS_FORCE_INLINE __attribute__((always_inline))
-#        define AWS_NO_INLINE __attribute__((noinline))
-#        define AWS_DECLSPEC_NORETURN
-#        define AWS_ATTRIBUTE_NORETURN __attribute__((noreturn))
-#        if defined(__cplusplus)
-#            define AWS_VARIABLE_LENGTH_ARRAY(type, name, length) type *name = alloca(sizeof(type) * (length))
-#        else
-#            define AWS_VARIABLE_LENGTH_ARRAY(type, name, length) type name[length];
-#        endif /* defined(__cplusplus) */
-#    endif     /*  defined(__GNUC__) || defined(__clang__) */
-#endif         /*  defined(_MSC_VER) */
+	#if defined(_MSC_VER)
+	#    include <malloc.h>
+	#    define AWS_ALIGNED_TYPEDEF(from, to, alignment) typedef __declspec(align(alignment)) from to
+	#    define AWS_LIKELY(x) x
+	#    define AWS_UNLIKELY(x) x
+	#    define AWS_FORCE_INLINE __forceinline
+	#    define AWS_NO_INLINE __declspec(noinline)
+	#    define AWS_VARIABLE_LENGTH_ARRAY(type, name, length) type *name = _alloca(sizeof(type) * (length))
+	#    define AWS_DECLSPEC_NORETURN __declspec(noreturn)
+	#    define AWS_ATTRIBUTE_NORETURN
+	#else
+	#    if defined(__GNUC__) || defined(__clang__)
+	#        define AWS_ALIGNED_TYPEDEF(from, to, alignment) typedef from to __attribute__((aligned(alignment)))
+	#        define AWS_TYPE_OF(a) __typeof__(a)
+	#        define AWS_LIKELY(x) __builtin_expect(!!(x), 1)
+	#        define AWS_UNLIKELY(x) __builtin_expect(!!(x), 0)
+	#        define AWS_FORCE_INLINE __attribute__((always_inline))
+	#        define AWS_NO_INLINE __attribute__((noinline))
+	#        define AWS_DECLSPEC_NORETURN
+	#        define AWS_ATTRIBUTE_NORETURN __attribute__((noreturn))
+	#        if defined(__cplusplus)
+	#            define AWS_VARIABLE_LENGTH_ARRAY(type, name, length) type *name = alloca(sizeof(type) * (length))
+	#        else
+	#            define AWS_VARIABLE_LENGTH_ARRAY(type, name, length) type name[length];
+	#        endif /* defined(__cplusplus) */
+	#    endif     /*  defined(__GNUC__) || defined(__clang__) */
+	#endif         /*  defined(_MSC_VER) */
+#endif
 
 #if defined(__has_feature)
 #    if __has_feature(address_sanitizer)
