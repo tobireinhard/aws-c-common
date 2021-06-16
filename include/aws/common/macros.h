@@ -57,6 +57,7 @@
 
 #ifdef VERIFAST /*VF_refacotring: Undefined macro leads to parse errors */
 	#define AWS_DECLSPEC_NORETURN
+	#define AWS_ATTRIBUTE_NORETURN
 #else
 	#if defined(_MSC_VER)
 	#    include <malloc.h>
