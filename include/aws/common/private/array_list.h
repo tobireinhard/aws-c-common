@@ -6,6 +6,14 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+
+#ifdef VERIFAST /*VF_refacotring: Resolves parse error below */
+	#define AWS_EXTERN_C_BEGIN
+	#define AWS_RESTRICT
+	#define AWS_EXTERN_C_END
+#endif
+
+
 AWS_EXTERN_C_BEGIN
 
 /**
