@@ -10,9 +10,7 @@
 #include <aws/common/exports.h>
 
 #include <aws/common/allocator.h>
-#ifndef VERIFAST /*VF_refacotring: Some macros cannot be parsed */
-	#include <aws/common/assert.h>
-#endif
+#include <aws/common/assert.h>
 #include <aws/common/error.h>
 #include <aws/common/macros.h>
 #include <aws/common/platform.h>

@@ -134,7 +134,9 @@ AWS_EXTERN_C_END
 
 #define AWS_RETURN_ERROR_IF3(cond, err, explanation) AWS_RETURN_ERROR_IF_IMPL("InternalCheck", cond, err, explanation)
 #define AWS_RETURN_ERROR_IF2(cond, err) AWS_RETURN_ERROR_IF3(cond, err, #cond " check failed")
-#define AWS_RETURN_ERROR_IF(...) CALL_OVERLOAD(AWS_RETURN_ERROR_IF, __VA_ARGS__)
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot parse "..." */
+	#define AWS_RETURN_ERROR_IF(...) CALL_OVERLOAD(AWS_RETURN_ERROR_IF, __VA_ARGS__)
+#endif
 
 #define AWS_ERROR_PRECONDITION3(cond, err, explanation) AWS_RETURN_ERROR_IF_IMPL("Precondition", cond, err, explanation)
 #define AWS_ERROR_PRECONDITION2(cond, err) AWS_ERROR_PRECONDITION3(cond, err, #cond " check failed")
@@ -146,20 +148,22 @@ AWS_EXTERN_C_END
 #define AWS_ERROR_POSTCONDITION1(cond) AWS_ERROR_POSTCONDITION2(cond, AWS_ERROR_INVALID_ARGUMENT)
 
 // The UNUSED is used to silence the complains of GCC for zero arguments in variadic macro
-#define AWS_PRECONDITION(...) CALL_OVERLOAD(AWS_PRECONDITION, __VA_ARGS__)
-#define AWS_FATAL_PRECONDITION(...) CALL_OVERLOAD(AWS_FATAL_PRECONDITION, __VA_ARGS__)
-#define AWS_POSTCONDITION(...) CALL_OVERLOAD(AWS_POSTCONDITION, __VA_ARGS__)
-#define AWS_FATAL_POSTCONDITION(...) CALL_OVERLOAD(AWS_FATAL_POSTCONDITION, __VA_ARGS__)
-#define AWS_ERROR_PRECONDITION(...) CALL_OVERLOAD(AWS_ERROR_PRECONDITION, __VA_ARGS__)
-#define AWS_ERROR_POSTCONDITION(...) CALL_OVERLOAD(AWS_ERROR_PRECONDITION, __VA_ARGS__)
+#ifndef VERIFAST /*VF_refacotring: VeriFast cannot parse "..." */
+	#define AWS_PRECONDITION(...) CALL_OVERLOAD(AWS_PRECONDITION, __VA_ARGS__)
+	#define AWS_FATAL_PRECONDITION(...) CALL_OVERLOAD(AWS_FATAL_PRECONDITION, __VA_ARGS__)
+	#define AWS_POSTCONDITION(...) CALL_OVERLOAD(AWS_POSTCONDITION, __VA_ARGS__)
+	#define AWS_FATAL_POSTCONDITION(...) CALL_OVERLOAD(AWS_FATAL_POSTCONDITION, __VA_ARGS__)
+	#define AWS_ERROR_PRECONDITION(...) CALL_OVERLOAD(AWS_ERROR_PRECONDITION, __VA_ARGS__)
+	#define AWS_ERROR_POSTCONDITION(...) CALL_OVERLOAD(AWS_ERROR_PRECONDITION, __VA_ARGS__)
 
-#define AWS_RETURN_WITH_POSTCONDITION(_rval, ...)                                                                      \
-    do {                                                                                                               \
-        AWS_POSTCONDITION(__VA_ARGS__);                                                                                \
-        return _rval;                                                                                                  \
-    } while (0)
+	#define AWS_RETURN_WITH_POSTCONDITION(_rval, ...)                                                                      \
+	    do {                                                                                                               \
+		AWS_POSTCONDITION(__VA_ARGS__);                                                                                \
+		return _rval;                                                                                                  \
+	    } while (0)
 
-#define AWS_SUCCEED_WITH_POSTCONDITION(...) AWS_RETURN_WITH_POSTCONDITION(AWS_OP_SUCCESS, __VA_ARGS__)
+	#define AWS_SUCCEED_WITH_POSTCONDITION(...) AWS_RETURN_WITH_POSTCONDITION(AWS_OP_SUCCESS, __VA_ARGS__)
+#endif
 
 #define AWS_OBJECT_PTR_IS_READABLE(ptr) AWS_MEM_IS_READABLE((ptr), sizeof(*(ptr)))
 #define AWS_OBJECT_PTR_IS_WRITABLE(ptr) AWS_MEM_IS_WRITABLE((ptr), sizeof(*(ptr)))
