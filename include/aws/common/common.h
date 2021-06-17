@@ -28,12 +28,14 @@
 
 AWS_EXTERN_C_BEGIN
 
-/**
- * Initializes internal datastructures used by aws-c-common.
- * Must be called before using any functionality in aws-c-common.
- */
-AWS_COMMON_API
-void aws_common_library_init(struct aws_allocator *allocator);
+#ifndef VERIFAST /*VF_refacotring: VeriFast does not support function pointers in structs -> problem with aws_allocator struct */
+	/**
+	 * Initializes internal datastructures used by aws-c-common.
+	 * Must be called before using any functionality in aws-c-common.
+	 */
+	AWS_COMMON_API
+	void aws_common_library_init(struct aws_allocator *allocator);
+#endif
 
 /**
  * Shuts down the internal datastructures used by aws-c-common.
