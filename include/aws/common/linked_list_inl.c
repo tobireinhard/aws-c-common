@@ -17,8 +17,15 @@ AWS_EXTERN_C_BEGIN
  */
 AWS_STATIC_IMPL void aws_linked_list_node_reset(struct aws_linked_list_node *node) {
     AWS_PRECONDITION(node != NULL);
-    AWS_ZERO_STRUCT(*node);
-    AWS_POSTCONDITION(AWS_IS_ZEROED(*node));
+    
+    #ifdef VERIFAST /*VF_refacotring: No support for dereferencing pointer inside macro argument nor inside "sizeof" */
+    	aws_linked_list_node node_val = *node;
+    	AWS_ZERO_STRUCT(node_val);
+    	AWS_POSTCONDITION(AWS_IS_ZEROED(node_val));
+    #else
+    	AWS_ZERO_STRUCT(*node);
+    	AWS_POSTCONDITION(AWS_IS_ZEROED(*node));
+    #endif
 }
 
 /**
