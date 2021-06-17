@@ -19,7 +19,13 @@
 
 /* Each library gets space for 2^^10 error entries */
 #define AWS_ERROR_ENUM_STRIDE_BITS 10
-#define AWS_ERROR_ENUM_STRIDE (1U << AWS_ERROR_ENUM_STRIDE_BITS)
+
+#ifdef VERIFAST /*VF_refacotring: Operator in this position not supported */
+	#define AWS_ERROR_ENUM_STRIDE (1024)
+#else
+	#define AWS_ERROR_ENUM_STRIDE (1U << AWS_ERROR_ENUM_STRIDE_BITS)
+#endif
+
 #define AWS_ERROR_ENUM_BEGIN_RANGE(x) ((x)*AWS_ERROR_ENUM_STRIDE)
 #define AWS_ERROR_ENUM_END_RANGE(x) (((x) + 1) * AWS_ERROR_ENUM_STRIDE - 1)
 
