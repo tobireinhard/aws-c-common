@@ -180,9 +180,11 @@ AWS_STATIC_IMPL void aws_linked_list_move_all_front(
     struct aws_linked_list *AWS_RESTRICT dst,
     struct aws_linked_list *AWS_RESTRICT src);
 
-#ifndef AWS_NO_STATIC_IMPL
-#    include <aws/common/linked_list.inl>
-#endif /* AWS_NO_STATIC_IMPL */
+#ifndef VERIFAST /*VF_refacotring: VF identifies this as a potential recursive inclusion. */
+	#ifndef AWS_NO_STATIC_IMPL
+	#    include <aws/common/linked_list_inl.c>
+	#endif /* AWS_NO_STATIC_IMPL */
+#endif
 AWS_EXTERN_C_END
 
 #endif /* AWS_COMMON_LINKED_LIST_H */

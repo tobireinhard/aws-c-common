@@ -3,4 +3,4 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-#include <aws/common/linked_list.inl>
+#include <aws/common/linked_list_inl.c>
