@@ -9,7 +9,10 @@
 #include <aws/common/config.h>
 #include <aws/common/exports.h>
 
-#include <aws/common/allocator.h>
+#ifndef VERIFAST /*VF_refacotring: VeriFast does not support function pointers in structs -> problem with aws_allocator struct */
+	#include <aws/common/allocator.h>
+#endif
+
 #include <aws/common/assert.h>
 #include <aws/common/error.h>
 #include <aws/common/macros.h>

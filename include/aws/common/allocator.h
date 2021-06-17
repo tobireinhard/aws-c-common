@@ -18,6 +18,8 @@ AWS_EXTERN_C_BEGIN
 	typedef void* mem_realloc_t(struct aws_allocator *allocator, void *oldptr, size_t oldsize, size_t newsize);
 	typedef void* mem_calloc_t(struct aws_allocator *allocator, size_t num, size_t size);
 
+// PROBLEM: VeriFast does not support function pointers in structs.
+
 	struct aws_allocator {
 	    mem_acquire_t mem_acquire;
 //	    void *(*mem_acquire)(struct aws_allocator *allocator, size_t size);
@@ -46,6 +48,7 @@ AWS_EXTERN_C_BEGIN
 	    void *impl;
 	};
 #endif
+
 
 /**
  * Inexpensive (constant time) check of data-structure invariants.
