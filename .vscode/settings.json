@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "array_list.h": "c",
+        "common.h": "c",
+        "system_info.h": "c",
+        "allocator.h": "c",
+        "assert.h": "c",
+        "error.h": "c",
+        "linked_list.inl": "c",
+        "linked_list_inl.h": "c",
+        "linked_list.h": "c",
+        "make_common_data_structures.h": "c",
+        "stddef.h": "c"
+    }
+}
