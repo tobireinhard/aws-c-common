@@ -18,7 +18,21 @@ predicate aws_linked_list_node(struct aws_linked_list_node* node,
                                struct aws_linked_list_node* prev,
                                struct aws_linked_list_node* next) =
 	node->prev |-> prev &*&
-	node->next |-> next;
+	node->next |-> next &*&
+	malloc_block_aws_linked_list_node(node);
+
+predicate aws_linked_list_node_raw(struct aws_linked_list_node* node,
+                               struct aws_linked_list_node* prev,
+                               struct aws_linked_list_node* next) =
+	node->prev |-> prev &*&
+	node->next |-> next &*&
+        malloc_block(node, sizeof(struct aws_linked_list_node)) &*&
+	struct_aws_linked_list_node_padding(node);
+	
+predicate aws_linked_list_node_bytes(struct aws_linked_list_node* node,
+                               list<char> bytes) =
+	chars((void*) node, sizeof(struct aws_linked_list_node), bytes) &*&
+        malloc_block(node, sizeof(struct aws_linked_list_node));
 
 
 predicate node_list(struct aws_linked_list_node* startNode,
@@ -43,6 +57,86 @@ predicate aws_linked_list(struct aws_linked_list* list, int length) =
 @*/
 
 
+
+/*@
+// Consider the code
+// struct T { ... };
+// struct T* tp = ...;
+// Depending of how memory for the new  struct instance has been allocated, it can be represented by
+// one of the following chunk combination (which are equivalent):
+// 1.) malloc_block_T(tp)
+// 2.) malloc_block(tp, sizeof(struct T) &*& struct_T_padding(node)
+// The following lemmas convert beteen these representations.
+
+lemma void generic_malloc_block_to_malloc_block_aws_linked_list_node(struct aws_linked_list_node* node);
+requires malloc_block(node, sizeof(struct aws_linked_list_node)) &*&
+              struct_aws_linked_list_node_padding(node);
+ensures malloc_block_aws_linked_list_node(node);
+
+lemma void malloc_block_aws_linked_list_node_to_generic_malloc_block(struct aws_linked_list_node* node);
+requires malloc_block_aws_linked_list_node(node);
+ensures malloc_block(node, sizeof(struct aws_linked_list_node)) &*&
+              struct_aws_linked_list_node_padding(node);
+@*/
+
+/*@
+// conversion between aws_linked_list_node(node, prev, next) and 
+// aws_linked_list_node_raw(node, prev, next)
+lemma void aws_linked_list_node_to_aws_linked_list_node_raw(struct aws_linked_list_node* node)
+requires aws_linked_list_node(node, ?prev, ?next);
+ensures aws_linked_list_node_raw(node, prev, next);
+{
+    open aws_linked_list_node(node, _, _);
+    malloc_block_aws_linked_list_node_to_generic_malloc_block(node);
+    close aws_linked_list_node_raw(node, _, _);
+}
+
+lemma void aws_linked_list_node_raw_to_aws_linked_list_node(struct aws_linked_list_node* node)
+requires aws_linked_list_node_raw(node, ?prev, ?next);
+ensures aws_linked_list_node(node, prev, next);
+{
+    open aws_linked_list_node_raw(node, _, _);
+    generic_malloc_block_to_malloc_block_aws_linked_list_node(node);
+    close aws_linked_list_node(node, _, _);
+}
+
+lemma void aws_linked_list_node_to_byes(struct aws_linked_list_node* node)
+requires aws_linked_list_node(node, ?prev, ?next);
+ensures aws_linked_list_node_bytes(node, ?bytes);
+{
+    open aws_linked_list_node(node, _, _);
+    malloc_block_aws_linked_list_node_to_generic_malloc_block(node);
+    open_struct(node);
+    close aws_linked_list_node_bytes(node, ?bytes);
+}
+
+lemma void bytes_to_aws_linked_list_node(struct aws_linked_list_node* node)
+requires aws_linked_list_node_bytes(node, ?bytes);
+ensures aws_linked_list_node(node, ?prev, ?next) &*&
+             all_eq(bytes, 0) == true ? (prev == NULL &*& next == NULL) : true;
+{
+    open aws_linked_list_node_bytes(node, bytes);
+//    close_struct(node);
+//    generic_malloc_block_to_malloc_block_aws_linked_list_node(node);
+    if (all_eq(bytes, 0))
+    {
+    	close_struct_zero(node);
+    }
+    else
+    {
+    	close_struct(node);
+    }
+    generic_malloc_block_to_malloc_block_aws_linked_list_node(node);
+    close aws_linked_list_node(node, _, _);
+}
+@*/
+
+
+/*@
+//lemma void aws_linked_list_node_raw_to_chars(struct aws_linked_list_node *node);
+//requires malloc_block
+@*/
+
 /**
  * Set node's next and prev pointers to NULL.
  */
@@ -52,18 +146,35 @@ AWS_STATIC_IMPL void aws_linked_list_node_reset(struct aws_linked_list_node *nod
 {
 //    AWS_PRECONDITION(node != NULL);
     
-    #ifdef VERIFAST /*VF_refacotring: No support for dereferencing pointer inside macro argument nor inside "sizeof" */
-// ignoring macros for now & simplifying code
-// TODO: verify actual code
-
-//    	aws_linked_list_node node_val = *node;
-//    	AWS_ZERO_STRUCT(node_val);
-//    	AWS_POSTCONDITION(AWS_IS_ZEROED(node_val));
+    #ifdef VERIFAST /*VF_refacotring: No support for: 
+                                                            1.) dereferencing pointer inside macro argument
+                                                            2.) taking the size of a variable or a pointer */
+        // -> maually resolve macro & overcome syntax restrictions
+/*
+        do
+        {
+            memset(node, 0, sizeof(struct aws_linked_list_node));
+        } while (0)
+*/
+	int x = 0;
+	do
+	//@ invariant true;
+	{
+		x = 13;
+	} while(0);
+	//@ assert x == 13;
 	
-	//@ open aws_linked_list_node(node, _, _);
-	node->prev = NULL;
-	node->next = NULL;
-	//@ close aws_linked_list_node(node, NULL, NULL);
+	
+	do
+	//@ invariant aws_linked_list_node(node, _, _);
+	{
+		//@ aws_linked_list_node_to_byes(node);
+		//@ open aws_linked_list_node_bytes(node, _);
+		memset(node, 0, sizeof(struct aws_linked_list_node));
+		//@ close aws_linked_list_node_bytes(node, _);
+		//@ bytes_to_aws_linked_list_node(node);
+        } while(0);
+//    	AWS_POSTCONDITION(AWS_IS_ZEROED(node_val));
     #else
     	AWS_ZERO_STRUCT(*node);
     	AWS_POSTCONDITION(AWS_IS_ZEROED(*node));
