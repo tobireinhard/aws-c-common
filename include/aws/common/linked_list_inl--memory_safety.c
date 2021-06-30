@@ -16,6 +16,10 @@ AWS_EXTERN_C_BEGIN
 /*@
 // The below predicates describe well-formed doubly linked lists and nodes.
 // -------------------------------------------------------------------------------------------
+
+// Standard representation of a node using a struct-specific malloc block.
+// Created when allocating memory by using 
+// malloc(sizeof(struct aws_linked_list_node)).
 predicate aws_linked_list_node(struct aws_linked_list_node* node,
                                struct aws_linked_list_node* prev,
                                struct aws_linked_list_node* next) =
