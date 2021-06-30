@@ -206,14 +206,6 @@ AWS_STATIC_IMPL void aws_linked_list_node_reset(struct aws_linked_list_node *nod
             memset(node, 0, sizeof(struct aws_linked_list_node));
         } while (0)
 */
-	int x = 0;
-	do
-	//@ invariant true;
-	{
-		x = 13;
-	} while(0);
-	//@ assert x == 13;
-	
 	
 	do
 	//@ invariant aws_linked_list_node(node, _, _);
