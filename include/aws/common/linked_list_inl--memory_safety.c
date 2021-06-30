@@ -14,6 +14,8 @@ AWS_EXTERN_C_BEGIN
 
 
 /*@
+// The below predicates describe well-formed doubly linked lists and nodes.
+// -------------------------------------------------------------------------------------------
 predicate aws_linked_list_node(struct aws_linked_list_node* node,
                                struct aws_linked_list_node* prev,
                                struct aws_linked_list_node* next) =
@@ -54,6 +56,39 @@ predicate aws_linked_list(struct aws_linked_list* list, int length) =
 		? (headNext == &(list->tail) &*& tailPrev == &(list->head))
 		:
 		node_list(headNext, &(list->head), tailPrev, &(list->tail));
+@*/
+
+
+
+/*@
+// The below predicates describe doubly linked lists and nodes that are
+// unvalidated and therefore potentially malformed.
+// -------------------------------------------------------------------------------------------
+predicate_ctor unvalidated_list_node(list<struct aws_linked_list_node*> all_nodes)
+                                                        (struct aws_linked_list_node* node) =
+    node != NULL &*&
+    malloc_block_aws_linked_list_node(node) &*&
+    mem(node, all_nodes) == true &*&
+    node->prev |-> ?prev &*&
+    node->next |-> ?next &*&
+    (prev != NULL ? mem(prev, all_nodes) == true : true) &*&
+    (next != NULL ? mem(next, all_nodes) == true : true);
+
+
+
+
+predicate unvalidated_list(struct aws_linked_list* list,
+                                        struct aws_linked_list_node* head,
+                                        struct aws_linked_list_node* tail,
+                                        list<struct aws_linked_list_node*> all_nodes) = 
+    list != NULL &*& head != NULL &*& tail != NULL &*&
+    &(list->head) == head &*& &(list->tail) == tail &*&
+    mem(head, all_nodes) == true &*&
+    mem(tail, all_nodes) == true &*&
+    foreach(all_nodes, unvalidated_list_node(all_nodes));
+    
+    
+predicate fix_nodes(struct aws_linked_list_node* a, struct aws_linked_list_node* b) = true;
 @*/
 
 
@@ -133,9 +168,15 @@ ensures aws_linked_list_node(node, ?prev, ?next) &*&
 
 
 /*@
-//lemma void aws_linked_list_node_raw_to_chars(struct aws_linked_list_node *node);
-//requires malloc_block
+// Lemmas to reason about lists
+// -------------------------------------------------------------------------------------------
+lemma void mem_after_remove<t>(t m, t r, list<t> ts);
+requires m != r &*& mem(m, ts) == true;
+ensures mem(m, remove(r, ts)) == true;
 @*/
+
+
+
 
 /**
  * Set node's next and prev pointers to NULL.
@@ -213,7 +254,24 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid(const struct aws_linked_list *list
  * node. As this checks whether the [next] connection of a node is
  * bidirectional, it returns false if used for the list tail.
  */
-AWS_STATIC_IMPL bool aws_linked_list_node_next_is_valid(const struct aws_linked_list_node *node) {
+AWS_STATIC_IMPL bool aws_linked_list_node_next_is_valid(const struct aws_linked_list_node *node) 
+/*@ requires fix_nodes(?next, ?next_prev) &*&
+                     (node != NULL
+                         ? node->next |-> next &*&
+                            (next != NULL 
+                                ? next->prev |-> next_prev 
+                                : true)
+                         : true);
+@*/
+/*@ ensures  fix_nodes(next, next_prev) &*&
+                     (node != NULL
+                         ? node->next |-> next &*&
+                            (next != NULL 
+                                ? next->prev |-> next_prev 
+                                : true)
+                         : true);
+@*/
+{
     return node && node->next && node->next->prev == node;
 }
 
@@ -225,6 +283,8 @@ AWS_STATIC_IMPL bool aws_linked_list_node_next_is_valid(const struct aws_linked_
 AWS_STATIC_IMPL bool aws_linked_list_node_prev_is_valid(const struct aws_linked_list_node *node) {
     return node && node->prev && node->prev->next == node;
 }
+
+
 
 /**
  * Checks that a linked list satisfies double linked list connectivity
@@ -238,7 +298,10 @@ AWS_STATIC_IMPL bool aws_linked_list_node_prev_is_valid(const struct aws_linked_
  * [b] in the list, b.prev != &a and so this check would fail, thus
  * terminating the loop.
  */
-AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list *list) {
+AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list *list) 
+//@ requires unvalidated_list(list, ?head, ?tail, ?all_nodes);
+//@ ensures unvalidated_list(list, head, tail, all_nodes);
+{
     if (!list) {
         return false;
     }
@@ -249,16 +312,87 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list 
     /* By satisfying the above and that edges are bidirectional, we
      * also guarantee that tail reaches head by following prev
      * pointers */
-    while (temp) {
+    
+    //@ open unvalidated_list(list, head, tail, all_nodes);
+    //@ foreach_remove(head, all_nodes);
+    //@ foreach_unremove(head, all_nodes);
+    //@ close unvalidated_list(list, head, tail, all_nodes);
+    
+    while (temp) 
+    /*@ invariant unvalidated_list(list, head, tail, all_nodes) &*&
+                          (temp != NULL 
+                              ? mem(temp, all_nodes) == true 
+                              : true
+                          );
+    @*/
+    {
+        //@ open unvalidated_list(list, head, tail, all_nodes);
+        //@ foreach_remove(temp, all_nodes);
+        /*@
+        if(temp != tail) {
+//            struct aws_linked_list_node* next;
+            struct aws_linked_list_node* next_prev;
+            open unvalidated_list_node(all_nodes)(temp);
+            assert temp->next |-> ?next;
+            if (next == temp) {
+                assert next != NULL;
+                assert temp->prev |-> ?prev;
+                next_prev = prev;
+            } else if (next != NULL) {
+                assert mem(next, all_nodes) == true;
+                assert next != temp;
+                mem_after_remove(next, temp, all_nodes);
+                assert next != temp;
+                foreach_remove(next, remove(temp, all_nodes));
+                open unvalidated_list_node(all_nodes)(next);
+                assert next->prev |-> ?next_prev';
+                next_prev = next_prev';
+            } else {
+                next_prev = NULL;
+            }
+            close fix_nodes(next, next_prev);
+        }
+        @*/
         if (temp == &list->tail) {
             head_reaches_tail = true;
+            //@ foreach_unremove(temp, all_nodes);
+            //@ close unvalidated_list(list, head, tail, all_nodes);
             break;
         } else if (!aws_linked_list_node_next_is_valid(temp)) {
             /* Next and prev pointers should connect the same nodes */
+
+            //@ open fix_nodes(_, _);
+            /*@
+            if (temp->next != temp && temp->next != NULL) {
+                assert mem(temp->next, all_nodes) == true;
+                close unvalidated_list_node(all_nodes)(temp->next);
+                foreach_unremove(temp->next, remove(temp, all_nodes));
+            }
+            @*/
+            //@ close unvalidated_list_node(all_nodes)(temp);
+            //@ foreach_unremove(temp, all_nodes);
+            //@ close unvalidated_list(list, head, tail, all_nodes);
+
+            
             return false;
         }
+        
+        //@ open fix_nodes(_, _);
+        /*@
+        if (temp->next != temp && temp->next != NULL) {
+            assert mem(temp->next, all_nodes) == true;
+            close unvalidated_list_node(all_nodes)(temp->next);
+            foreach_unremove(temp->next, remove(temp, all_nodes));
+        }
+        @*/
+            
+        //@ struct aws_linked_list_node* old_temp = temp;
         temp = temp->next;
+        //@ close unvalidated_list_node(all_nodes)(old_temp);
+        //@ foreach_unremove(old_temp, all_nodes);
+        //@ close unvalidated_list(list, head, tail, all_nodes);
     }
+    
     return head_reaches_tail;
 }
 
