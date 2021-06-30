@@ -135,7 +135,7 @@ ensures aws_linked_list_node(node, prev, next);
     close aws_linked_list_node(node, _, _);
 }
 
-lemma void aws_linked_list_node_to_byes(struct aws_linked_list_node* node)
+lemma void aws_linked_list_node_to_bytes(struct aws_linked_list_node* node)
 requires aws_linked_list_node(node, ?prev, ?next);
 ensures aws_linked_list_node_bytes(node, ?bytes);
 {
@@ -210,7 +210,7 @@ AWS_STATIC_IMPL void aws_linked_list_node_reset(struct aws_linked_list_node *nod
 	do
 	//@ invariant aws_linked_list_node(node, _, _);
 	{
-		//@ aws_linked_list_node_to_byes(node);
+		//@ aws_linked_list_node_to_bytes(node);
 		//@ open aws_linked_list_node_bytes(node, _);
 		memset(node, 0, sizeof(struct aws_linked_list_node));
 		//@ close aws_linked_list_node_bytes(node, _);
