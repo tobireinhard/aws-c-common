@@ -62,14 +62,18 @@ predicate node_list(struct aws_linked_list_node* startNode,
 
 predicate aws_linked_list(struct aws_linked_list* list, int length) =
 	length >= 0 &*&
+	malloc_block_aws_linked_list(list) &*&
+	struct_aws_linked_list_node_padding(&(list->head)) &*&
+	struct_aws_linked_list_node_padding(&(list->tail)) &*&
 	aws_linked_list_node_next(&(list->head), ?headNext) &*&   // list->head.next
 	aws_linked_list_node_prev(&(list->head), NULL) &*&        // list->head.prev
 	aws_linked_list_node_next(&(list->tail), NULL) &*&        // list->tail.next
 	aws_linked_list_node_prev(&(list->tail), ?tailPrev) &*&   // list->tail.prev
-	length == 0 
+	(length == 0 
 		? (headNext == &(list->tail) &*& tailPrev == &(list->head))
 		:
-		node_list(headNext, &(list->head), tailPrev, &(list->tail));
+		node_list(headNext, &(list->head), tailPrev, &(list->tail))
+	);
 @*/
 
 
