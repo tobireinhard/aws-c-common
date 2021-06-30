@@ -1,9 +1,6 @@
 #ifndef LIST_EXT_GH
 #define LIST_EXT_GH
 
-#include "prelude_core.gh"
-#include "list.gh"
-
 
 lemma void mem_after_remove<t>(t m, t r, list<t> ts);
 requires m != r &*& mem(m, ts) == true;
