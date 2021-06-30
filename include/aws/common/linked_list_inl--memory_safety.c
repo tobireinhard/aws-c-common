@@ -170,9 +170,18 @@ ensures aws_linked_list_node(node, ?prev, ?next) &*&
 /*@
 // Lemmas to reason about lists
 // -------------------------------------------------------------------------------------------
-lemma void mem_after_remove<t>(t m, t r, list<t> ts);
+lemma void mem_after_remove<t>(t m, t r, list<t> ts)
 requires m != r &*& mem(m, ts) == true;
 ensures mem(m, remove(r, ts)) == true;
+{
+    switch(ts) {
+        case nil:
+	case cons(head, tail):
+            if (head != m) {
+                mem_after_remove(m, r, tail);
+            }
+    }
+}
 @*/
 
 
