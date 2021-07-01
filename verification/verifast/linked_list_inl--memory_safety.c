@@ -131,6 +131,11 @@ AWS_STATIC_IMPL bool aws_linked_list_node_prev_is_valid(const struct aws_linked_
  */
 AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list *list) 
 //@ requires unvalidated_list(list, ?head, ?tail, ?all_nodes);
+/* "all_nodes" is a collection of nodes that includes all the nodes that we might
+   encounter while traversing "list" from its head to tail (and potentially others nodes as well).
+   "unvalidated_list(list, head, tail, all_nodes)" includes access permissions for all the nodes
+   contained in "all_nodes" (including their "prev" and "next" pointers.
+*/
 //@ ensures unvalidated_list(list, head, tail, all_nodes);
 {
     if (!list) {
@@ -144,9 +149,8 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list 
      * also guarantee that tail reaches head by following prev
      * pointers */
     
+    // Prove "mem(temp, all_nodes) == true" for loop invariant
     //@ open unvalidated_list(list, head, tail, all_nodes);
-    //@ foreach_remove(head, all_nodes);
-    //@ foreach_unremove(head, all_nodes);
     //@ close unvalidated_list(list, head, tail, all_nodes);
     
     while (temp) 
@@ -157,27 +161,36 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list 
                           );
     @*/
     {
-        //@ open unvalidated_list(list, head, tail, all_nodes);
-        //@ foreach_remove(temp, all_nodes);
+        
         /*@
         if(temp != tail) {
-//            struct aws_linked_list_node* next;
-            struct aws_linked_list_node* next_prev;
+            /* Acquire permission to access "temp", "temp->next"
+               and "temp->prev".
+             */
+            open unvalidated_list(list, head, tail, all_nodes);
+            foreach_remove(temp, all_nodes);
             open unvalidated_list_node(all_nodes)(temp);
+        
+            /* The invocation of "aws_linked_list_node_next_is_valid(temp)" 
+               below potentially requires access permissions for "temp->next"
+               and "temp->next->prev".
+               Below we determine which of these permissions are required and
+               store this information in form of a predicate
+               "fix_nodes(next, next_prev)". Here, "next" and "next_prev" are
+               either NULL or store a pointer to a node for which we require
+               an access permission, respectively.
+            */
+            struct aws_linked_list_node* next_prev;
             assert temp->next |-> ?next;
             if (next == temp) {
-                assert next != NULL;
-                assert temp->prev |-> ?prev;
-                next_prev = prev;
+                next_prev = temp->prev;
             } else if (next != NULL) {
-                assert mem(next, all_nodes) == true;
-                assert next != temp;
+                // acquire permission to access "temp->next->prev"
                 mem_after_remove(next, temp, all_nodes);
-                assert next != temp;
                 foreach_remove(next, remove(temp, all_nodes));
                 open unvalidated_list_node(all_nodes)(next);
-                assert next->prev |-> ?next_prev';
-                next_prev = next_prev';
+                
+                next_prev = next->prev;
             } else {
                 next_prev = NULL;
             }
@@ -186,8 +199,8 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list 
         @*/
         if (temp == &list->tail) {
             head_reaches_tail = true;
-            //@ foreach_unremove(temp, all_nodes);
-            //@ close unvalidated_list(list, head, tail, all_nodes);
+            ///@ foreach_unremove(temp, all_nodes);
+            ///@ close unvalidated_list(list, head, tail, all_nodes);
             break;
         } else if (!aws_linked_list_node_next_is_valid(temp)) {
             /* Next and prev pointers should connect the same nodes */
@@ -195,23 +208,26 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list 
             //@ open fix_nodes(_, _);
             /*@
             if (temp->next != temp && temp->next != NULL) {
-                assert mem(temp->next, all_nodes) == true;
+                // Release permission to access "temp->next->prev".
                 close unvalidated_list_node(all_nodes)(temp->next);
                 foreach_unremove(temp->next, remove(temp, all_nodes));
             }
             @*/
+            
+            /* Release permission to access "temp" and "temp->next".
+               and "temp->prev".
+             */
             //@ close unvalidated_list_node(all_nodes)(temp);
             //@ foreach_unremove(temp, all_nodes);
             //@ close unvalidated_list(list, head, tail, all_nodes);
 
-            
             return false;
         }
         
         //@ open fix_nodes(_, _);
         /*@
         if (temp->next != temp && temp->next != NULL) {
-            assert mem(temp->next, all_nodes) == true;
+            // Release permission to access "temp->next->prev".
             close unvalidated_list_node(all_nodes)(temp->next);
             foreach_unremove(temp->next, remove(temp, all_nodes));
         }
@@ -219,8 +235,14 @@ AWS_STATIC_IMPL bool aws_linked_list_is_valid_deep(const struct aws_linked_list 
             
         //@ struct aws_linked_list_node* old_temp = temp;
         temp = temp->next;
+        
+        /* Release permission to access "old_temp" and "old_temp->next".
+           and "old_temp->prev".
+         */
         //@ close unvalidated_list_node(all_nodes)(old_temp);
         //@ foreach_unremove(old_temp, all_nodes);
+        
+        // Restore loop invariant.
         //@ close unvalidated_list(list, head, tail, all_nodes);
     }
     
