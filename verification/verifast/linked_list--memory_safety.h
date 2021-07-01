@@ -82,30 +82,45 @@ predicate aws_linked_list(struct aws_linked_list* list, int length) =
 // The below predicates describe doubly linked lists and nodes that are
 // unvalidated and therefore potentially malformed.
 // -------------------------------------------------------------------------------------------
-predicate_ctor unvalidated_list_node(list<struct aws_linked_list_node*> all_nodes)
-                                                        (struct aws_linked_list_node* node) =
-    node != NULL &*&
-    malloc_block_aws_linked_list_node(node) &*&
-    mem(node, all_nodes) == true &*&
-    node->prev |-> ?prev &*&
-    node->next |-> ?next &*&
-    (prev != NULL ? mem(prev, all_nodes) == true : true) &*&
-    (next != NULL ? mem(next, all_nodes) == true : true);
 
-
-
-
+/*
+An unvalidated list consists of a head and a tail and a finite collection of nodes 
+that are potentially reachable from the head or tail.
+The predicate ensures that we have the permission to access all potentially
+reachable nodes.
+*/
 predicate unvalidated_list(struct aws_linked_list* list,
                                         struct aws_linked_list_node* head,
                                         struct aws_linked_list_node* tail,
                                         list<struct aws_linked_list_node*> all_nodes) = 
     list != NULL &*& head != NULL &*& tail != NULL &*&
     &(list->head) == head &*& &(list->tail) == tail &*&
-    mem(head, all_nodes) == true &*&
+    mem(head, all_nodes) == true &*&                               // head in all_nodes
     mem(tail, all_nodes) == true &*&
-    foreach(all_nodes, unvalidated_list_node(all_nodes));
+    foreach(all_nodes, unvalidated_list_node(all_nodes));    // ensures permission to access every node in all_nodes
     
     
+/*
+Predicate with two argument lists to allow partial application in "foreach" predicate above.
+
+"unvalidated_list_node(all_nodes)(node)" ensures that:
+- we can access node->prev & node->next
+- node is contained in all_nodes
+- if node->prev / node->next != NULL, then it points to a node in all_nodes
+  (and because of "foreach(all_nodes, unvalidated_list_node(all_nodes))" above, we have right to access this node)
+*/
+predicate_ctor unvalidated_list_node(list<struct aws_linked_list_node*> all_nodes)
+                                                        (struct aws_linked_list_node* node) =
+    node != NULL &*&
+    malloc_block_aws_linked_list_node(node) &*&
+    mem(node, all_nodes) == true &*&
+    node->prev |-> ?prev &*&                                                        // right to access node->prev
+    node->next |-> ?next &*&
+    (prev != NULL ? mem(prev, all_nodes) == true : true) &*&       // prev != NULL  ==>  prev in all_nodes  (==>  right to access prev->prev & prev->next)
+    (next != NULL ? mem(next, all_nodes) == true : true);
+
+
+// Predicate to bind nodes and hand the binding over to an invoked function
 predicate fix_nodes(struct aws_linked_list_node* a, struct aws_linked_list_node* b) = true;
 @*/
 

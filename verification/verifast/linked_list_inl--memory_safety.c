@@ -94,6 +94,11 @@ AWS_STATIC_IMPL bool aws_linked_list_node_next_is_valid(const struct aws_linked_
                                 : true)
                          : true);
 @*/
+/* Contract makes short curcuiting below explicit.
+   Access right for "node->next" only needed if "node != NULL".
+   Access right for "node->next->prev" only needed if 
+   "node != NULL && node->next != NULL".
+*/
 /*@ ensures  fix_nodes(next, next_prev) &*&
                      (node != NULL
                          ? node->next |-> next &*&
