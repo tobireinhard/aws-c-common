@@ -4,6 +4,8 @@
 include(CheckCSourceRuns)
 include(AwsCFlags)
 
+option(USE_CPU_EXTENSIONS "Whenever possible, use functions optimized for CPUs with specific extensions (ex: SSE, AVX)." ON)
+
 if(NOT CMAKE_CROSSCOMPILING)
     check_c_source_runs("
     #include <stdbool.h>
@@ -20,12 +22,14 @@ if(NOT CMAKE_CROSSCOMPILING)
         return 0;
     }" AWS_HAVE_GCC_OVERFLOW_MATH_EXTENSIONS)
 
-    check_c_source_runs("
-    int main() {
-    int foo = 42;
-    _mulx_u32(1, 2, &foo);
-    return foo != 2;
-    }" AWS_HAVE_MSVC_MULX)
+    if (USE_CPU_EXTENSIONS)
+        check_c_source_runs("
+        int main() {
+        int foo = 42;
+        _mulx_u32(1, 2, &foo);
+        return foo != 2;
+        }" AWS_HAVE_MSVC_MULX)
+    endif()
 
 endif()
 
@@ -90,13 +94,4 @@ if(NOT LEGACY_COMPILER_SUPPORT OR ARM_CPU)
     int main() {
         return 0;
     }" AWS_HAVE_EXECINFO)
-endif()
-
-if (NOT MSVC)
-    set(CMAKE_REQUIRED_FLAGS "-Werror -Wno-error=stringop-overflow")
-    check_c_source_compiles("
-    int main() {
-        return 0;
-    }" AWS_SHOULD_DISABLE_STRINGOP_OVERFLOW)
-    unset(CMAKE_REQUIRED_FLAGS)
 endif()
